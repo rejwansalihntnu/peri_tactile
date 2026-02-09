@@ -1,7 +1,8 @@
 # peri_tactile
-# Combined Neuropixels Dataset: Structure and Usage
 
-This repository contains the scripts used to perform the analyses and generate the figures in the corresponding manuscript. 
+This repository contains the scripts used to perform the analyses and generate the figures contained in the following manscript: 
+
+[*Salih, R. H. F., Cobar, L. F., Pauzin, F. P., Zoccolan, D., & Nigro, M. J. (2025). Tactile responses in the mouse perirhinal cortex show invariance to physical features of the stimulus. bioRxiv, 2025-08.*](https://www.biorxiv.org/content/10.1101/2025.08.15.670508v1)
 
 Virtually all scripts depend on a common data container, `Pop_data`, which aggregates:
 
@@ -10,7 +11,7 @@ Virtually all scripts depend on a common data container, `Pop_data`, which aggre
 - Speed traces, when available
 - A full per-unit metadata and quality-metrics table
 
-The data are built by a preprocessing script that loads subject-level data, merges quality metrics, assigns anatomical regions, computes trial-level variability metrics, and serializes the results into a standard format. Since the script was tailor-made for in-lab routines for data collection, it is not necessary to share the script. Rather, we explain below the structure of the container to allow others to produce the structure themselves. Note, however, that the scripts can easily be modified to not use this container.
+The data are built by a preprocessing script that loads subject-level data, merges quality metrics, assigns anatomical regions, computes trial-level variability metrics, and serializes the results into a standard format. We provide a summary of the structure below (A more in-depth explanation of the preprocessing pipeline can be found in the folder `dataset_generation`). Note, however, that the scripts can be easily modified to not use this container.
 
 ## Pop_data Class Structure
 
@@ -19,7 +20,7 @@ After preprocessing, an instance of `Pop_data` contains four main attributes:
 - pop_sp — nested dictionary of spike trains
 - pop_stims — per-mouse stimulation dataframes
 - df — full metadata and quality metrics table
-- spd — per-mouse speed traces (optional)
+- spd — per-mouse speed traces (not used in the manuscript)
 
 ## 1. Spike Dictionary (pop_data.pop_sp)
 
@@ -68,8 +69,8 @@ Region name normalization:
 
 Spike-shape rules:
 
-- FS = duration < 0.4 ms
-- RS = duration ≥ 0.4 ms
+- Fast-spiking; FS = duration < 0.4 ms
+- Regular-spiking; RS = duration ≥ 0.4 ms
 
 ## 4. Speed Traces (pop_data.spd) (not used for manuscript)
 
