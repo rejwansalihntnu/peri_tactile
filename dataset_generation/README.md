@@ -13,15 +13,9 @@ In addition, there are two folders `BAR/PER` which contain data from the two neu
 
 - Quality metrics spreadsheet (suffix: `_metrics_test.xlsx`) with quality metrics listed as columns for each neuron (rows) extracted from kilosort.
 - A probe location spreadsheet (suffix: `_Probe_Location.xlsx`) containing the columns `region	subregion	min_id	max_id`, which list the layers and electrode indexes for each region, e.g.
-region	subregion	min_id	max_id
-SSp-bfd	6a	0	35
-SSp-bfd	5	36	68
-SSp-bfd	4	69	73
-SSp-un	4	74	90
-SSp-un	2/3	91	104
-<div style="text-align: center;">
-<img width="522" height="175" alt="image" src="https://github.com/user-attachments/assets/fbd4fa3f-ec9f-412e-9c49-0f1f3c349dce" />
-</div>
+
+<img width="522" height="175" alt="image" style="display: block; margin: 0 auto;" src="https://github.com/user-attachments/assets/fbd4fa3f-ec9f-412e-9c49-0f1f3c349dce" />
+
 
 
 
