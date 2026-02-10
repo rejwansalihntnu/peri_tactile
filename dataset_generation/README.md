@@ -11,43 +11,23 @@ The experimental data acquired in a given session is stored in a folder named by
 
 In addition, there are two folders `BAR/PER` which contain data from the two neuropixels probes whose primary targets were the Barrel cortex and Perirhinal cortex. All relevant files have a prefix `{probe_dir}/{mouse_id}_{probe_name}`, where `{probe_dir}` is either `PER` or `BAR`. Specifically, the folder contains:
 
-- Quality metrics spreadsheet (suffix: `_metrics_test.xlsx`) with quality metrics listed as columns for each neuron (rows) extracted from kilosort.
+- Quality metrics spreadsheet (suffix: `_metrics_test.xlsx`) with quality metrics listed as columns for each neuron (rows) extracted from kilosort. These metrics were all obtained through SpikeInterface.
 - A probe location spreadsheet (suffix: `_Probe_Location.xlsx`) containing the columns `region	subregion	min_id	max_id`, which list the layers and electrode indexes for each region, e.g.
 
-<img width="522" height="175" alt="image" style="display: block; margin: 0 auto;" src="https://github.com/user-attachments/assets/fbd4fa3f-ec9f-412e-9c49-0f1f3c349dce" />
+<img width="522" height="175" alt="image" src="https://github.com/user-attachments/assets/fbd4fa3f-ec9f-412e-9c49-0f1f3c349dce" />
 
+- A dataset of spike times (suffix: `_Spikes.mat`), which is effectively the `rez.mat` file output by kilosort after spike-sorting.
 
+## 2. The `Pop_data` class
 
-
-
-
-
-
-
-
-This repository contains the scripts used to perform the analyses and generate the figures contained in the following manscript: 
-
-[*Salih, R. H. F., Cobar, L. F., Pauzin, F. P., Zoccolan, D., & Nigro, M. J. (2025). Tactile responses in the mouse perirhinal cortex show invariance to physical features of the stimulus. bioRxiv, 2025-08.*](https://www.biorxiv.org/content/10.1101/2025.08.15.670508v1)
-
-Virtually all scripts depend on a common data container, `Pop_data`, which aggregates:
-
-- Single-unit spike trains grouped by mouse → probe → brain region
-- Stimulation metadata for every trial
-- Speed traces, when available
-- A full per-unit metadata and quality-metrics table
-
-The data are built by a preprocessing script that loads subject-level data, merges quality metrics, assigns anatomical regions, computes trial-level variability metrics, and serializes the results into a standard format. We provide a summary of the structure below (A more in-depth explanation of the preprocessing pipeline can be found in the folder `dataset_generation`). Note, however, that the scripts can be easily modified to not use this container.
-
-## Pop_data Class Structure
-
-After preprocessing, an instance of `Pop_data` contains four main attributes:
+This custom-made class centralises the loading and storage of all session data across all sessions. It consists of the following attributes:
 
 - pop_sp — nested dictionary of spike trains
 - pop_stims — per-mouse stimulation dataframes
 - df — full metadata and quality metrics table
 - spd — per-mouse speed traces (not used in the manuscript)
 
-## 1. Spike Dictionary (pop_data.pop_sp)
+### 2.1 Spike Dictionary (`Pop_data.pop_sp`)
 
 A nested dictionary with the structure:
 
@@ -61,7 +41,7 @@ mouse_id → probe → region → unit_id → spike_times_array
 
 Noise units are removed before building this structure.
 
-## 2. Stimulation Metadata (pop_data.pop_stims)
+### 2.2 Stimulation Metadata (`pop_data.pop_stims`)
 
 Each mouse has a stimulation dataframe containing:
 
@@ -71,9 +51,9 @@ Each mouse has a stimulation dataframe containing:
 - up: up/down deflection indicator (0 and 1 for the two directions; the stimulus moves in a square-wave pattern)
 - trial_idx: integer specifying the trial number chronologically
 
-## 3. Unit Metadata Table (pop_data.df)
+### 2.3 Unit Metadata Table (`pop_data.df`)
 
-A concatenated pandas DataFrame containing one row per unit.
+A concatenated pandas DataFrame of quality metrics, containing one row per unit.
 
 Key columns include:
 
@@ -82,22 +62,27 @@ Key columns include:
 - probe
 - region
 - subregion
-- class (FS or RS)
-- cluster_group (“MUA” or “good”)
+- class (Regular or fast-spiking; see below)
+- cluster_group (Multi-unit activity “MUA” or single-unit activity “good”)
 - trial_cv
-- good_bool (QC flag; see below)
-
-Region name normalization:
-
-- AUD → AUDv, AUDd, or AUDp  
-- Tea/TEa → TeA
+- good_bool (Quality control flag; see below)
 
 Spike-shape rules:
 
 - Fast-spiking; FS = duration < 0.4 ms
 - Regular-spiking; RS = duration ≥ 0.4 ms
 
-## 4. Speed Traces (pop_data.spd) (not used for manuscript)
+Quality control condition:
+
+A unit is marked good_bool = True if:
+
+- Trial-based coefficient of variation, trial_cv ≤ 1
+- presence_ratio ≥ 0.9
+- Whole-session spike count ≥ 500
+
+QC flags annotate units but do not remove them.
+
+### 2.4 Speed Traces (`pop_data.spd`)
 
 A dictionary:
 
@@ -105,9 +90,18 @@ mouse_id → speed_trace_array or None
 
 If no speed file exists for a mouse, the value is None.
 
-## Access Examples
+## 3. Dataset Ingestion and Access Logic
+
+The `combine_all_data.py` script will collect the raw data outlined above and transform them into the format outlined above for the `Pop_data` class. It will also initalise an instance of the `Pop_data` class and assign the transformed data to the four attributes of the class. The combined data and the four individual components will be individually saved. This allows one to load the entire dataset directly, or through the use of the `Pop_data` class:
 
 ```python
+pop_data = Pop_data(data_dir="/path/to/data")
+```
+
+After loading, the data components can be accessed through the class attributes, e.g.
+
+```python
+# Load the dataset either through 
 # Spikes from a region
 pop_data.pop_sp[mouse_id]["BAR"]["CA1"]
 
@@ -120,13 +114,3 @@ pop_data.pop_stims[mouse_id]
 # Speed trace
 pop_data.spd[mouse_id]
 ```
-
-## QC Logic
-
-A unit is marked good_bool = True if:
-
-- trial_cv ≤ 1
-- presence_ratio ≥ 0.9
-- spike count ≥ 500
-
-QC flags annotate units but do not remove them.
