@@ -45,7 +45,7 @@ Noise units are removed before building this structure.
 
 Each mouse has a stimulation dataframe containing:
 
-- pulse_t: pulse time in milliseconds
+- pulse_t: onset time, in seconds, for a given stimulus movement
 - type_: stimulation type index (this is simply an integer that denotes which stimulation type the data corresponds to; ipsilateral, contralateral, or bilateral)
 - exp_block: experimental block ID (0 and 1 to separate between audio-only and audio-tactile trial blocks)
 - up: up/down deflection indicator (0 and 1 for the two directions; the stimulus moves in a square-wave pattern)
